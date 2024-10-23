@@ -9,10 +9,11 @@ import git
 class FakeGit:
     def __init__(self):
         self.project_dir = os.path.realpath(os.path.dirname(__file__))
-        self.min_commits = 45
-        self.max_commits = 113
+        self.min_commits = 0
+        self.max_commits = 12
         self.repo = None
-        self.remote_url = "https://github.com/theveloper-pl/Fake-Git-History.git"
+        self.author = "craftid"
+        self.remote_url = "https://github.com/craftid/fake-history.git"
         self.repo_name = self.remote_url.split("/")[-1].split(".")[0]
         print("[Info]: Starting")
 
@@ -35,9 +36,13 @@ class FakeGit:
     def single_commit(self, year: int, month: int, day: int):
         current_date = mydate.date(year, month, day)
         commits_amount = random.randint(self.min_commits, self.max_commits)
-        print(f"Currently commiting {current_date} with {commits_amount} commits")
-        for x in range(commits_amount):
-            self.execute_commit(current_date.year, current_date.month, current_date.day)
+        if commits_amount > 8:
+            # skip the day
+            print(f"Skipping {current_date} with {commits_amount} commits!")
+        else:
+            print(f"Currently commiting {current_date} with {commits_amount} commits!")
+            for x in range(commits_amount):
+                self.execute_commit(current_date.year, current_date.month, current_date.day)
 
     def many_commits(self, commit_start_date, commit_stop_date, mix=False):
         while True:
@@ -69,11 +74,26 @@ if __name__ == "__main__":
         FakeGit.single_commit(provided_data[0], provided_data[1], provided_data[2])
         FakeGit.git_push()
     else:
-        start_date = [int(x) for x in input("Start date in format YYYY/MM/DD\n>> ").split("/")]
-        stop_date = [int(x) for x in input("Stop date in format YYYY/MM/DD\n>> ").split("/")]
+        try:
+            start_date_input = input("Start date in format YYYY/MM/DD (leave blank for default)\n>> ")
+            if start_date_input:
+                start_date = [int(x) for x in start_date_input.split("/")]
+                start_date = mydate.date(start_date[0], start_date[1], start_date[2])
+            else:
+                start_date = mydate.date.today() - mydate.timedelta(days=5*365)
 
-        start_date = mydate.date(start_date[0], start_date[1], start_date[2])
-        stop_date = mydate.date(stop_date[0], stop_date[1], stop_date[2])
+            stop_date_input = input("Stop date in format YYYY/MM/DD (leave blank for default)\n>> ")
+            if stop_date_input:
+                stop_date = [int(x) for x in stop_date_input.split("/")]
+                if len(stop_date) == 1:
+                    stop_date = mydate.date.today() - mydate.timedelta(days=stop_date[0])
+                else:
+                    stop_date = mydate.date(stop_date[0], stop_date[1], stop_date[2])
+            else:
+                stop_date = mydate.date.today() - mydate.timedelta(days=1)
+        except Exception as e:
+            print(f"Error parsing dates: {e}")
+            exit(1)
 
         FakeGit.many_commits(start_date, stop_date)
         FakeGit.git_push()
