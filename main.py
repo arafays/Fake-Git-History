@@ -12,7 +12,6 @@ class FakeGit:
         self.min_commits = 0
         self.max_commits = 12
         self.repo = None
-        self.author = "craftid"
         self.remote_url = "https://github.com/craftid/fake-history.git"
         self.repo_name = self.remote_url.split("/")[-1].split(".")[0]
         print("[Info]: Starting")
